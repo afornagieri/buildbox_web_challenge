@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 
 const StyledInput = styled.input`
@@ -43,40 +43,9 @@ const StyledInput = styled.input`
     font-size: 1.2em;
   }
 
-  ${props => props.type === "file" && `
-    width: 10%;
-    height: 4em;
-    border-radius: 48px;
-    margin-top: 2em;
-  
-    @media (min-width: 2560px) {
-      width: 10%;
-    }
-
-    @media (min-width: 1440px) and (max-width: 2559px) {
-      width: 10%;
-      height: 3em;
-    }
-
-    @media (min-width: 1024px) and (max-width: 1439px) {
-      width: 12%;
-      height: 2.5em;
-    }
-
-    @media (min-width: 768px) and (max-width: 1023px) {
-      width: 15%;
-      height: 2em;
-    }
-
-    @media (min-width: 425px) and (max-width: 767px) {
-      width: 20%;
-      height: 2em;
-    }
-
-    @media (max-width: 425px) {
-      width: 20%;
-    }
-  `}
+  &[type="file"] {
+    display: none;
+  }
 `;
 
 const StyledTextarea = styled.textarea`
@@ -124,25 +93,134 @@ const StyledTextarea = styled.textarea`
   }
 `;
 
+const ImageContainer = styled.div<{ hasImage: boolean }>`
+  position: relative;
+  border: 2px dashed #9f9f9f;
+  width: 200px;
+  height: 200px;
+  margin: 0.5em;
+  border-radius: 50px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #494949;
+  color: #9f9f9f;
+  cursor: pointer;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: ${({ hasImage }) => (hasImage ? 'block' : 'none')};
+  }
+
+  @media (min-width: 768px) {
+    width: 100px;
+    height: 100px;
+    border-radius: 40px;
+  }
+
+  @media (min-width: 425px) and (max-width: 768px) {
+    width: 80px;
+    height: 80px;
+    border-radius: 35px;
+  }
+
+  @media (max-width: 425px) {
+    width: 60px;
+    height: 60px;
+    border-radius: 20px;
+  }
+
+  @media (max-width: 375px) {
+    width: 80px;
+    height: 80px;
+    border-radius: 15px;
+  }
+`;
+
+const Icon = styled.span<{ hasImage: boolean }>`
+  font-size: 4em;
+  color: #9f9f9f;
+  display: ${({ hasImage }) => (hasImage ? 'none' : 'block')};
+
+  @media (min-width: 768px) {
+    font-size: 3em;
+  }
+
+  @media (min-width: 425px) and (max-width: 768px) {
+    font-size: 2.5em;
+  }
+
+  @media (max-width: 425px) {
+    font-size: 2em;
+  }
+
+  @media (max-width: 375px) {
+    font-size: 1.5em;
+  }
+`;
+
+const RemoveButton = styled.button`
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #ff0000;
+  font-size: 1.5em;
+`;
+
 interface FormInputProps {
   type: string;
   placeholder: string;
 }
 
 const FormInput: React.FC<FormInputProps> = ({ type, placeholder }) => {
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setSelectedImage(e.target?.result as string);
+      };
+      reader.readAsDataURL(event.target.files[0]);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setSelectedImage(null);
+  };
+
   if (type === "textarea") {
+    return <StyledTextarea placeholder={placeholder} />;
+  }
+
+  if (type === "file") {
     return (
-      <StyledTextarea
-        placeholder={placeholder}
-      />
+      <div>
+        <StyledInput type="file" placeholder={placeholder} onChange={handleImageChange} id="fileInput" />
+        <label htmlFor="fileInput">
+          <ImageContainer hasImage={!!selectedImage}>
+            {selectedImage && <img src={selectedImage} alt="Selected" />}
+            <Icon hasImage={!!selectedImage} className="material-symbols-outlined">
+              add_photo_alternate
+            </Icon>
+            {selectedImage && (
+              <RemoveButton onClick={handleRemoveImage}>
+                <span className="material-symbols-outlined">delete</span>
+              </RemoveButton>
+            )}
+          </ImageContainer>
+        </label>
+      </div>
     );
   }
 
-  return (
-    <StyledInput 
-      type={type}
-      placeholder={placeholder}
-    />
-  );
-}
+  return <StyledInput type={type} placeholder={placeholder} />;
+};
+
 export default FormInput;

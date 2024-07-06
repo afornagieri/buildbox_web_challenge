@@ -5,6 +5,7 @@ const GroupFormButton = styled.div`
   display: flex;
   justify-content: end;
   width: 100%;
+  margin-right: 15%;
   top: -1%;
 `;
 
