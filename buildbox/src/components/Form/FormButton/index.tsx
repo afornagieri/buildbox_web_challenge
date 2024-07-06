@@ -51,7 +51,8 @@ const submitButtonStyles = `
 
   &:hover {
     box-shadow: 0 0 5px 2px rgba(0, 0, 0, 0.5);
-    color: #252525;
+    color: #cfcfcf;
+    background-color: #71bc00;
   }
 
   &:focus {
@@ -77,15 +78,16 @@ const StyledButton = styled.button`
 `;
 
 interface FormButtonProps {
-  type: "submit" | "reset" | undefined;
+  type: "submit" | "reset";
   text: string;
+  onClick: () => void;
 }
 
-const FormButton: React.FC<FormButtonProps> = ({ type, text }) => {
+const FormButton: React.FC<FormButtonProps> = ({ type, text, onClick }) => {
   return (
-        <StyledButton type={type}>
-          {text}
-        </StyledButton>
+    <StyledButton type={type} onClick={onClick}>
+      {text}
+    </StyledButton>
   );
 }
 

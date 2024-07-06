@@ -174,18 +174,26 @@ const RemoveButton = styled.button`
 `;
 
 interface FormInputProps {
-  type: string;
+  type: "text" | "textarea" | "file";
   placeholder: string;
+  onChange?: (value: string) => void;
 }
 
-const FormInput: React.FC<FormInputProps> = ({ type, placeholder }) => {
+const FormInput: React.FC<FormInputProps> = ({ type, placeholder, onChange }) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>) => {
+    if (onChange) {
+      onChange(event.target.value);
+    }
+  };
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
       const reader = new FileReader();
       reader.onload = (e) => {
         setSelectedImage(e.target?.result as string);
+        localStorage.setItem("selectedImage", e.target?.result as string);
       };
       reader.readAsDataURL(event.target.files[0]);
     }
@@ -193,17 +201,14 @@ const FormInput: React.FC<FormInputProps> = ({ type, placeholder }) => {
 
   const handleRemoveImage = () => {
     setSelectedImage(null);
+    localStorage.removeItem("selectedImage");
   };
-
-  if (type === "textarea") {
-    return <StyledTextarea placeholder={placeholder} />;
-  }
 
   if (type === "file") {
     return (
       <div>
-        <StyledInput type="file" placeholder={placeholder} onChange={handleImageChange} id="fileInput" />
-        <label htmlFor="fileInput">
+        <label>
+          <StyledInput type="file" onChange={handleImageChange} />
           <ImageContainer hasImage={!!selectedImage}>
             {selectedImage && <img src={selectedImage} alt="Selected" />}
             <Icon hasImage={!!selectedImage} className="material-symbols-outlined">
@@ -220,7 +225,11 @@ const FormInput: React.FC<FormInputProps> = ({ type, placeholder }) => {
     );
   }
 
-  return <StyledInput type={type} placeholder={placeholder} />;
+  if (type === "textarea") {
+    return <StyledTextarea placeholder={placeholder} onChange={handleChange}/>;
+  }
+
+  return <StyledInput type={type} placeholder={placeholder} onChange={handleChange}/>;
 };
 
 export default FormInput;
